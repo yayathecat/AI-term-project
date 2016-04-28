@@ -110,7 +110,7 @@ class ai_agent():
 				#if (enemy[0][0] in range(myleft-mywidth/2, myleft+mywidth)) and (enemy[0][1] < mytop):
 				#if (enemy[0][0] in range(myleft-mywidth/2, myleft+15)) and (enemy[0][1] < mytop):
 				if (enemy_bulletL in range(myleft+3+1, myleft+mywidth-9-1)) and (enemy[0][1] < mytop):
-					print ("Find enemy on the Up", enemy[3])
+					print "Find enemy on the Up"
 					move_dir = 0;
 					self.Update_Strategy(c_control,0,move_dir,1);
 					shoot = 1;
@@ -119,7 +119,7 @@ class ai_agent():
 				#elif (enemy[0][0] in range(myleft-mywidth/2, myleft+mywidth)) and (enemy[0][1] > mytop):
 				#elif (enemy[0][0] in range(myleft-mywidth/2, myleft+15)) and (enemy[0][1] > mytop):
 				elif (enemy_bulletL in range(myleft+3+1, myleft+mywidth-9-1)) and (enemy[0][1] > mytop):
-					print ("Find enemy on the Down", enemy[3])
+					print "Find enemy on the Down"
 					move_dir = 2;
 					self.Update_Strategy(c_control,0,move_dir,1);
 					if (myleft in range(flagleft-mywidth, flagleft+flagwidth)) and ((enemy[0][1] - mytop) > (3*16)):
@@ -131,7 +131,7 @@ class ai_agent():
 				#elif (enemy[0][1] in range(mytop-myheight/2, mytop+myheight)) and (enemy[0][0] > myleft):
 				#elif (enemy[0][1] in range(mytop-myheight/2, mytop+15)) and (enemy[0][0] > myleft):
 				elif (enemy_bulletT in range(mytop+3+1, mytop+myheight-9-1)) and (enemy[0][0] > myleft):
-					print ("Find enemy on the Right", enemy[3])
+					print "Find enemy on the Right"
 					move_dir = 1;
 					self.Update_Strategy(c_control,0,move_dir,1);
 					if (mytop in range(flagtop-myheight, flagtop+flagheight)) and (flagleft > myleft):
@@ -143,7 +143,7 @@ class ai_agent():
 				#elif (enemy[0][1] in range(mytop-myheight/2, mytop+myheight)) and (enemy[0][0] < myleft):
 				#elif (enemy[0][1] in range(mytop-myheight/2, mytop+15)) and (enemy[0][0] < myleft):
 				elif (enemy_bulletT in range(mytop+3+1, mytop+myheight-9-1)) and (enemy[0][0] < myleft):
-					print ("Find enemy on the Left", enemy[3])
+					print "Find enemy on the Left"
 					move_dir = 3;
 					self.Update_Strategy(c_control,0,move_dir,1);
 					if (mytop in range(flagtop-myheight, flagtop+flagheight)) and (flagleft < myleft):
