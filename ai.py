@@ -27,14 +27,12 @@ class ai_agent():
 			
 	def operations (self,p_mapinfo,c_control):	
 
+		WantTo = 4
+		GoRound = 4
+	
 		while True:
 		#-----your ai operation,This code is a random strategy,please design your ai !!-----------------------			
 			self.Get_mapInfo(p_mapinfo)
-			##print self.mapinfo[0]
-			#shoot = random.randint(0,1)
-			#move_dir = random.randint(0,4)
-			#keep_action = 0
-			#keep_action = 1
 			## Initialization ##
 			shoot = 0
 			shootDist = 100
@@ -48,61 +46,63 @@ class ai_agent():
 			flagL = (12-1)*16;
 			flagT = (24-1)*16;
 			flagW = 32+32;
-			flagH = 32+16;
+			flagH = 32+32;
 			NoTop = False
 			NoDown = False
 			NoLeft = False
 			NoRight = False
 			NoTop_tile = self.mapinfo[2][0]
-			NoTop_tile[1] = 0
+			NoTop_tile[1] = 6
 			NoDown_tile = self.mapinfo[2][0]
-			NoDown_tile[1] = 0
+			NoDown_tile[1] = 6
 			NoLeft_tile = self.mapinfo[2][0]
-			NoLeft_tile[1] = 0
+			NoLeft_tile[1] = 6
 			NoRight_tile = self.mapinfo[2][0]
-			NoRight_tile[1] = 0
+			NoRight_tile[1] = 6
 			min_dist = -1
 			min_enemy = self.mapinfo[3][0]
 			danger_dist = -1
 			danger_flag = False
 			danger_enemy = self.mapinfo[3][0]
 			## Check if path for 4 direction ##
-			# tiles
-			if myL <= 2:
+			if (myL <= 2) or ((myL in range(flagL+flagW-1, flagL+flagW+3+3)) and (myT in range(flagT-myH, flagT+flagH))):
 				NoLeft = True;
-			elif (myL+myW) >= (26*16-2):
+			elif ((myL+myW) >= (26*16-2)) or (((myL+myW) in range(flagL-3-3, flagL+1)) and (myT in range(flagT-myH, flagT+flagH))):
 				NoRight = True;
-			if myT <= 2:
+			if (myT <= 2):
 				NoTop = True;
-			elif (myT+myH) >= (26*16-2):
+			elif ((myT+myH) >= (26*16-2)) or (((myT+myH) in range(flagT-3-3, flagT+1)) and (myL in range(flagL-myW, flagL+flagW))):
 				NoDown = True;
+			# tiles
 			for tile in self.mapinfo[2]:
 				if ((tile[0][0] in range(myL, myL+myW)) or ((tile[0][0]+tile[0][2]) in range(myL, myL+myW))) and (tile[1] != 4):
-					if (tile[0][1]+tile[0][3]) in range (myT-3-3, myT+1):
-						##print "No way to Top"
+					if ((tile[0][1]+tile[0][3]) in range (myT-3-3, myT+1)) and (not NoTop):
+						#print "No way to Top"
 						NoTop = True
 						NoTop_tile = tile
-						if tile[0][1] in (flagT-1, flagT+flagH):
-							NoTop_tile[1] = 0
-					elif tile[0][1] in range (myT+myH-1, myT+myH+3+3):
-						##print "No way to Down"
+						#if (tile[0][1] in (flagT-1, flagT+flagH)):
+						#	NoTop_tile[1] = 6
+					elif (tile[0][1] in range (myT+myH-1, myT+myH+3+3)) and (not NoDown):
+						#print "No way to Down"
 						NoDown = True
 						NoDown_tile = tile
-						if tile[0][1] in (flagT-1, flagT+flagH):
-							NoDown_tile[1] = 0
+						#if (tile[0][1] in (flagT-1, flagT+flagH)) and (tile[0][0] in range(flagL-1, flagL+flagW)):
+						#	NoDown_tile[1] = 6
 				if ((tile[0][1] in range(myT, myT+myH)) or ((tile[0][1]+tile[0][3]) in range(myT, myT+myH))) and (tile[1] != 4):
-					if (tile[0][0]+tile[0][2]) in range(myL-3-3, myL+1):
-						##print "No way to Left"
+					if ((tile[0][0]+tile[0][2]) in range(myL-3-3, myL+1)) and (not NoLeft):
+						#print "No way to Left"
 						NoLeft = True
 						NoLeft_tile = tile
-						if tile[0][0] in range(flagL-1, flagL+flagW):
-							NoLeft_tile[1] = 0
-					elif tile[0][0] in range(myL+myW-1, myL+myW+3+3):
-						##print "No way to Right"
+						#if tile[0][0] in range(flagL-1, flagL+flagW):
+						#if (tile[0][1] in (flagT-1, flagT+flagH)) and (tile[0][0] in range(flagL-1, flagL+flagW)):
+						#	NoLeft_tile[1] = 6
+					elif (tile[0][0] in range(myL+myW-1, myL+myW+3+3)) and (not NoRight):
+						#print "No way to Right"
 						NoRight = True
 						NoRight_tile = tile
-						if tile[0][0] in range(flagL-1, flagL+flagW):
-							NoRight_tile[1] = 0
+						#if tile[0][0] in range(flagL-1, flagL+flagW):
+						#if (tile[0][1] in (flagT-1, flagT+flagH)) and (tile[0][0] in range(flagL-1, flagL+flagW)):
+						#	NoRight_tile[1] = 6
 			# enemies
 			for tile in self.mapinfo[1]:
 				dist = (tile[0][0]-myL)*(tile[0][0]-myL) + (tile[0][1]-myT)*(tile[0][1]-myT)
@@ -118,24 +118,24 @@ class ai_agent():
 					elif (tile[0][1] > danger_dist):
 						danger_dist = tile[0][1]
 						danger_enemy = tile
-				if ((tile[0][0] in range(myL, myL+myW)) or ((tile[0][0]+tile[0][2]) in range(myL, myL+myW))) and (tile[1] != 4):
-					if (tile[0][1]+tile[0][3]) in range (myT-2, myT-1):
-						##print "#No way to Top"
-						NoTop = True
-						#NoTop_tile = tile
-					elif tile[0][1] in range (myT+myH+1, myT+myH+2):
-						##print "#No way to Down"
-						NoDown = True
-						#NoDown_tile = tile
-				if ((tile[0][1] in range(myT, myT+myH)) or ((tile[0][1]+tile[0][3]) in range(myT, myT+myH))) and (tile[1] != 4):
-					if (tile[0][0]+tile[0][2]) in range(myL-2, myL-1):
-						##print "#No way to Left"
-						NoLeft = True
-						#NoLeft_tile = tile
-					elif tile[0][0] in range(myL+myW+1, myL+myW+2):
-						##print "#No way to Right"
-						NoRight = True
-						#NoRight_tile = tile
+			#	if ((tile[0][0] in range(myL, myL+myW)) or ((tile[0][0]+tile[0][2]) in range(myL, myL+myW))) and (tile[1] != 4):
+			#		if (tile[0][1]+tile[0][3]) in range (myT-2, myT-1):
+			#			#print "#No way to Top"
+			#			NoTop = True
+			#			#NoTop_tile = tile
+			#		elif tile[0][1] in range (myT+myH+1, myT+myH+2):
+			#			#print "#No way to Down"
+			#			NoDown = True
+			#			#NoDown_tile = tile
+			#	if ((tile[0][1] in range(myT, myT+myH)) or ((tile[0][1]+tile[0][3]) in range(myT, myT+myH))) and (tile[1] != 4):
+			#		if (tile[0][0]+tile[0][2]) in range(myL-2, myL-1):
+			#			#print "#No way to Left"
+			#			NoLeft = True
+			#			#NoLeft_tile = tile
+			#		elif tile[0][0] in range(myL+myW+1, myL+myW+2):
+			#			#print "#No way to Right"
+			#			NoRight = True
+			#			#NoRight_tile = tile
 						
 			## Chase nearest/dangerest enemy ##
 			if danger_flag:
@@ -151,189 +151,97 @@ class ai_agent():
 				enemyH = min_enemy[0][3]
 				enemyD = min_enemy[1]
 			if (enemyT > myT) & (not NoDown) & (not (((myT + flagH) > (enemyT-12)) and (((enemyD == 1) and (enemyL < myL)) or ((enemyD == 3) and (enemyL > myL))))):
-				#print "Trace to Down"
+				print "Trace to Down"
 				move_dir = 2;
 				shoot = 0;
 			elif (enemyL < myL) & (not NoLeft) & (not ((myL < (enemyL + enemyW+12)) and (((enemyD == 0) and (enemyT > myT)) or ((enemyD == 2) and (enemyT < myT))))):
-				#print "Trace to Left";
+				print "Trace to Left";
 				move_dir = 3;
 				shoot = 0;
 			elif (enemyL > myL) & (not NoRight) & (not (((myL + myW) > (enemyL-12)) and (((enemyD == 0) and (enemyT > myT)) or ((enemyD == 2) and (enemyT < myT))))):
-				#print "Trace to Right";
+				print "Trace to Right";
 				move_dir = 1;
 				shoot = 0;
 			elif (enemyT < myT) & (not NoTop) & (not ((myT < (enemyT + enemyH+12)) and (((enemyD == 1) and (enemyL < myL)) or ((enemyD == 3) and (enemyL > myL))))):
-				#print "Trace to Top";
+				print "Trace to Top";
 				move_dir = 0;
 				shoot = 0;
-			elif (enemyT > myT) & (NoDown_tile[1] == 1):#		#if ((myL+9+6)< NoDown_tile[0][0]):
+			elif (myT < enemyT) & (NoDown_tile[1] == 1):
 				if ((myL+10+6)< NoDown_tile[0][0]):
-					#print "Shoot Down Wall (R)"
+					print "Shoot Down Wall (R)"
 					move_dir = 1
 					shoot = 0
 				elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) <= (myL+10+1)):
-					#print "Shoot Down Wall (L)"
+					print "Shoot Down Wall (L)"
 					move_dir = 3
 					shoot = 0
 				else:
 					move_dir = 2;
-					if (myL in range(flagL-myW, flagL+flagW)) and (myT < (22*16)):
-						shoot = 0;
-					else:
-						shoot = 1;
-						shootDist = NoDown_tile[0][1]-(myT+myH)
-						#print "Shoot D wall"
-					#self.Update_Strategy(c_control,0,move_dir,0);
-					#self.Update_Strategy(c_control,shoot,move_dir,0);
+					#if (myL in range(flagL-myW, flagL+flagW)) and (myT < (22*16)):
+					#	shoot = 0;
+					#else:
+					shoot = 1;
+					shootDist = NoDown_tile[0][1]-(myT+myH)
+					print "Shoot D wall"
 			elif (enemyL < myL) & (NoLeft_tile[1] == 1):
 				if ((myT+10+6) < NoLeft_tile[0][1]):
-					#print "Shoot Left Wall (D)"
+					print "Shoot Left Wall (D)"
 					move_dir = 2
 					shoot = 0
 				elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) <= (myT+10+1)):
-					#print "Shoot Left Wall (U)"
+					print "Shoot Left Wall (U)"
 					move_dir = 0
 					shoot = 0
 				else:
 					move_dir = 3;
-					#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL < myL):
-					if (myT > (flagT-(flagH/2))) and (flagL < myL):
-						shoot = 0;
-					else:
-						shoot = 1;
-						shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
-						#print "Shoot L wall"
-					#self.Update_Strategy(c_control,0,move_dir,0);
-					#self.Update_Strategy(c_control,shoot,move_dir,0);
-			elif (enemyL > myL) & (NoRight_tile[1] == 1):
+					#if (myT > (flagT-(flagH/2))) and (flagL < myL):
+					#	shoot = 0;
+					#else:
+					shoot = 1;
+					shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
+					print "Shoot L wall"
+			elif (myL < enemyL) & (NoRight_tile[1] == 1):
 				if ((myT+10+6) < NoRight_tile[0][1]):
-					#print "Shoot Right Wall (D)"
+					print "Shoot Right Wall (D)"
 					move_dir = 2
 					shoot = 0
 				elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) <= (myT+10+1)):
-					#print "Shoot Right Wall (U)"
+					print "Shoot Right Wall (U)"
 					move_dir = 0
 					shoot = 0
 				else:
 					move_dir = 1;
-					#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL > myL):
-					if (myT > (flagT-(flagH/2))) and (flagL > myL):
-						shoot = 0;
-					else:
-						shoot = 1;
-						shootDist = NoRight_tile[0][0]-(myL+myW)
-						#print "Shoot R wall"
-					#self.Update_Strategy(c_control,0,move_dir,0);
-					#self.Update_Strategy(c_control,shoot,move_dir,0);
+					#if (myT > (flagT-(flagH/2))) and (flagL > myL):
+					#	shoot = 0;
+					#else:
+					shoot = 1;
+					shootDist = NoRight_tile[0][0]-(myL+myW)
+					print "Shoot R wall"
 			elif (enemyT < myT) & (NoTop_tile[1] == 1):
 				if ((myL+10+6)< NoTop_tile[0][0]):
-					#print "Shoot Top Wall (R)"
+					print "Shoot Top Wall (R)"
 					move_dir = 1
 					shoot = 0
-				#elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) < (myL+9+1)):
 				elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) <= (myL+10+1)):
-					#print "Shoot Top Wall (L)"
+					print "Shoot Top Wall (L)"
 					move_dir = 3
 					shoot = 0
 				else:
 					move_dir = 0;
 					shoot = 1;
 					shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
-					#print "Shoot T wall"
+					print "Shoot T wall"
 					#self.Update_Strategy(c_control,0,move_dir,0);
-			#if (myT < enemyT) and (move_dir == 4):
-			#	if not NoDown:
-			#		#print "Trace Down"
-			#		move_dir = 2
-			#		shoot = 0
-			#	elif (NoDown_tile[1] == 1):
-			#		#if ((myL+9+6)< NoDown_tile[0][0]):
-			#		if ((myL+10+6)< NoDown_tile[0][0]):
-			#			#print "Shoot Down Wall (R)"
-			#			move_dir = 1
-			#			shoot = 0
-			#		#elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) < (myL+9+1)):
-			#		elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) < (myL+10+1)):
-			#			#print "Shoot Down Wall (L)"
-			#			move_dir = 3
-			#			shoot = 0
-			#		else:
-			#			#print self.mapinfo[3]
-			#			#print ("Shoot Down Wall", NoDown_tile)
-			#			move_dir = 2
-			#			shoot = 1
-			#			shootDist = NoDown_tile[0][1]-(myT+myH)
-			#			self.Update_Strategy(c_control,0,move_dir,0)
-			#if (enemyL < myL) and (move_dir == 4):
-			#	if not NoLeft:
-			#		#print "Trace Left"
-			#		move_dir = 3
-			#		shoot = 0
-			#	elif (NoLeft_tile[1] == 1):
-			#		#if ((myT+9+6) < NoLeft_tile[0][1]):
-			#		if ((myT+10+6) < NoLeft_tile[0][1]):
-			#			#print "Shoot Left Wall (D)"
-			#			move_dir = 2
-			#			shoot = 0
-			#		#elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) < (myT+9+1)):
-			#		elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) < (myT+10+1)):
-			#			#print "Shoot Left Wall (U)"
-			#			move_dir = 0
-			#			shoot = 0
-			#		else:
-			#			#print self.mapinfo[3]
-			#			#print ("Shoot Left Wall", NoLeft_tile)
-			#			move_dir = 3
-			#			shoot = 1
-			#			shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
-			#			self.Update_Strategy(c_control,0,move_dir,0)
-			#if (myL < enemyL) and (move_dir == 4):
-			#	if not NoRight:
-			#		#print "Trace Right"
-			#		move_dir = 1
-			#		shoot = 0
-			#	elif (NoRight_tile[1] == 1):
-			#		#if ((myT+9+6) < NoRight_tile[0][1]):
-			#		if ((myT+10+6) < NoRight_tile[0][1]):
-			#			#print "Shoot Right Wall (D)"
-			#			move_dir = 2
-			#			shoot = 0
-			#		#elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) < (myT+9+1)):
-			#		elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) < (myT+10+1)):
-			#			#print "Shoot Right Wall (U)"
-			#			move_dir = 0
-			#			shoot = 0
-			#		else:
-			#			#print self.mapinfo[3]
-			#			#print ("Shoot Right Wall", NoRight_tile)
-			#			move_dir = 1
-			#			shoot = 1
-			#			shootDist = NoRight_tile[0][0]-(myL+myW)
-			#			self.Update_Strategy(c_control,0,move_dir,0)
-			#if (enemyT < myT) and (move_dir == 4):
-			#	if not NoTop:
-			#		#print "Trace Top"
-			#		move_dir = 0
-			#		shoot = 0
-			#	elif (NoTop_tile[1] == 1):
-			#		#if ((myL+9+6)< NoTop_tile[0][0]):
-			#		if ((myL+10+6)< NoTop_tile[0][0]):
-			#			#print "Shoot Top Wall (R)"
-			#			move_dir = 1
-			#			shoot = 0
-			#		#elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) < (myL+9+1)):
-			#		elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) < (myL+10+1)):
-			#			#print "Shoot Top Wall (L)"
-			#			move_dir = 3
-			#			shoot = 0
-			#		else:
-			#			#print self.mapinfo[3]
-			#			#print ("Shoot Top Wall", NoTop_tile)
-			#			move_dir = 0
-			#			shoot = 1
-			#			shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
-			#			self.Update_Strategy(c_control,0,move_dir,0)
-			
+			else:
+				if NoTop:
+					print ("Top:",NoTop_tile[1])
+				if NoRight:
+					print ("Right:",NoRight_tile[1])
+				if NoDown:
+					print ("Down:",NoDown_tile[1])
+				if NoLeft:
+					print ("Left:",NoLeft_tile[1])
+				
 			## Check around ##
 			# Enemies #
 			for enemy in self.mapinfo[1]:
@@ -342,247 +250,185 @@ class ai_agent():
 				#if (enemy_bulletL in range(myL+9-6+1, myL+9+6-1)):
 				if (enemy_bulletL in range(myL+10-6+1, myL+10+6-1)):
 					if (enemy[0][1] < myT):
-						#print "Find enemy on the Top"
+						print "Find enemy on the Top"
 						move_dir = 0
 						shoot = 1
 						shootDist = myT-(enemy[0][1]+enemy[0][3])
 						if (enemy[3] == 1) or (enemy[1] == 2):
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
+						
+						if NoTop & (NoTop_tile[1] == 1):
+							if ((myL+10+6)< NoTop_tile[0][0]):
+								print "Shoot Top Wall (R)"
+								move_dir = 1
+								shoot = 0
+							#elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) < (myL+9+1)):
+							elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) <= (myL+10+1)):
+								print "Shoot Top Wall (L)"
+								move_dir = 3
+								shoot = 0
+							else:
+								move_dir = 0;
+								shoot = 1;
+								#shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
+								shootDist = 0
+								print "Shoot T wall"
+								#self.Update_Strategy(c_control,0,move_dir,0);
+						
 					elif (myT < enemy[0][1]):
-						#print "Find enemy on the Down"
+						print "Find enemy on the Down"
 						move_dir = 2
 						shoot = 1
 						shootDist = enemy[0][1]-(myT+myH)
 						if (enemy[3] == 1) or (enemy[1] == 0):
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
+						
+						if NoDown & (NoDown_tile[1] == 1):
+							if ((myL+10+6)< NoDown_tile[0][0]):
+								print "Shoot Down Wall (R)"
+								move_dir = 1
+								shoot = 0
+							elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) <= (myL+10+1)):
+								print "Shoot Down Wall (L)"
+								move_dir = 3
+								shoot = 0
+							else:
+								move_dir = 2;
+								#if (myL in range(flagL-myW, flagL+flagW)) and (myT < (22*16)):
+								#	shoot = 0;
+								#else:
+								shoot = 1;
+								#shootDist = NoDown_tile[0][1]-(myT+myH)
+								shootDist = 0
+						
 				elif (enemy_bulletL in range(myL-6-1, myL+10-6)) and (((enemy[0][1] < myT) and (enemy[1] == 2)) or ((myT < enemy[0][1]) and (enemy[1] == 0))):
 					if not NoRight:
-						#print "Erun R"
+						print "Erun R"
 						move_dir = 1
 						shoot = 0
 					else:
-						#print "Eclose L"
+						print "Eclose L"
 						move_dir = 3
 						shoot = 0
 				elif (enemy_bulletL in range(myL+10+6, myL+myW+1)) and (((enemy[0][1] < myT) and (enemy[1] == 2)) or ((myT < enemy[0][1]) and (enemy[1] == 0))):
 					if not NoLeft:
-						#print "Erun L"
+						print "Erun L"
 						move_dir = 3
 						shoot = 0
 					else:
-						#print "Eclose R"
+						print "Eclose R"
 						move_dir = 1
 						shoot = 0
 						
 				#elif (enemy_bulletT in range(myT+9-6+1, myT+9+6-1)):
 				if (enemy_bulletT in range(myT+10-6+1, myT+10+6-1)):
 					if (enemy[0][0] < myL):
-						#print "Find enemy on the Left"
+						print "Find enemy on the Left"
 						move_dir = 3
 						shoot = 1
 						shootDist = myL-(enemy[0][0]+enemy[0][2])
 						if (enemy[3] == 1) or (enemy[1] == 1):
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
+						
+						if NoLeft & (NoLeft_tile[1] == 1):
+							if ((myT+10+6) < NoLeft_tile[0][1]):
+								print "Shoot Left Wall (D)"
+								move_dir = 2
+								shoot = 0
+							elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) <= (myT+10+1)):
+								print "Shoot Left Wall (U)"
+								move_dir = 0
+								shoot = 0
+							else:
+								move_dir = 3;
+								#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL < myL):
+								#if (myT > (flagT-(flagH/2))) and (flagL < myL):
+								#	shoot = 0;
+								#else:
+								shoot = 1;
+								#shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
+								shootDist = 0
+								print "Shoot L wall"
+								#self.Update_Strategy(c_control,0,move_dir,0);
+								#self.Update_Strategy(c_control,shoot,move_dir,0);
+						
 					elif (myL < enemy[0][0]):
-						#print "Find enemy on the Right"
+						print "Find enemy on the Right"
 						move_dir = 1
 						shoot = 1
 						shootDist = enemy[0][0]-(myL+myW)
 						if (enemy[3] == 1) or (enemy[1] == 3):
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
+						
+						if NoRight & (NoRight_tile[1] == 1):
+							if ((myT+10+6) < NoRight_tile[0][1]):
+								print "Shoot Right Wall (D)"
+								move_dir = 2
+								shoot = 0
+							elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) <= (myT+10+1)):
+								print "Shoot Right Wall (U)"
+								move_dir = 0
+								shoot = 0
+							else:
+								move_dir = 1;
+								#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL > myL):
+								#if (myT > (flagT-(flagH/2))) and (flagL > myL):
+								#	shoot = 0;
+								#else:
+								shoot = 1;
+								#shootDist = NoRight_tile[0][0]-(myL+myW)
+								shootDist = 0
+								print "Shoot R wall"
+								#self.Update_Strategy(c_control,0,move_dir,0);
+								#self.Update_Strategy(c_control,shoot,move_dir,0);
+						
 				elif (enemy_bulletT in range(myT-6-1, myL+10-6)) and (((enemy[0][0] < myL) and (enemy[1] == 1)) or ((myL < enemy[0][0]) and (enemy[1] == 3))):
 					if not NoDown:
-						#print "Erun D"
+						print "Erun D"
 						move_dir = 2
 						shoot = 0
 					else:
-						#print "Eclose T"
+						print "Eclose T"
 						move_dir = 0
 						shoot = 0
 				elif (enemy_bulletT in range(myT+10+6, myT+myH+1)) and (((enemy[0][0] < myL) and (enemy[1] == 1)) or ((myL < enemy[0][0]) and (enemy[1] == 3))):
 					if not NoTop:
-						#print "Erun T"
+						print "Erun T"
 						move_dir = 0
 						shoot = 0
 					else:
-						#print "Eclose D"
+						print "Eclose D"
 						move_dir = 2
 						shoot = 0
 						
 			# Bullets #
 			for bullet in self.mapinfo[0]:
-				#if(bullet[0][0] in range(myL-bullet[0][2], myL+myW)) and (bullet[1] == 0):
-				#	#print "Bullet goes Up"
-				#	if (bullet[0][1] > myT) and ((bullet[0][1] - myT) < (3*16)):
-				#		shoot = 0;
-				#		#if (bullet[0][0] in range(myL-6, myL+9-6+1)) and (not NoLeft):
-				#		if (bullet[0][0] in range(myL-6, myL+10-6+1)) and (not NoLeft):
-				#			#print "RL"
-				#			move_dir = 3;
-				#		#elif (bullet[0][0] in range(myL+9+6, myL+myW)) and (not NoRight):
-				#		elif (bullet[0][0] in range(myL+10+6, myL+myW)) and (not NoRight):
-				#			#print "RR"
-				#			move_dir = 1;
-				#		elif not NoLeft:
-				#			#print "RL"
-				#			move_dir = 3;
-				#		else:
-				#			#print "RR"
-				#			move_dir = 1;
-				#	else:
-				#		#if (bullet[0][0] in range(myL+9+6, myL+myW)) and (not NoLeft):
-				#		if (bullet[0][0] in range(myL+10+6, myL+myW)) and (not NoLeft):
-				#			#print "CL";
-				#			move_dir = 3;
-				#			shoot = 0;
-				#		#elif (bullet[0][0] in range(myL-6, myL+9-6+1)) and (not NoRight):
-				#		elif (bullet[0][0] in range(myL-6, myL+10-6+1)) and (not NoRight):
-				#			#print "CR";
-				#			move_dir = 1;
-				#			shoot = 0;
-				#		elif (bullet[0][1] > myT):
-				#			move_dir = 2;
-				#			self.Update_Strategy(c_control,0,move_dir,0);
-				#			if (myL in range(flagL-myW, flagL+flagW)) and ((bullet[0][1] - myT) > (3*16)):
-				#				shoot = 0;
-				#			else:
-				#				shoot = 1;
-				#				shootDist = 0;
-				#elif(bullet[0][0] in range(myL-bullet[0][2], myL+myW)) and (bullet[1] == 2):
-				#	#print "Bullet goes Down"
-				#	if (bullet[0][1] < myT) and ((myT - bullet[0][1]) < (3*16)):
-				#		shoot = 0;
-				#		#if (bullet[0][0] in range(myL-6, myL+9-6+1)) and (not NoLeft):
-				#		if (bullet[0][0] in range(myL-6, myL+10-6+1)) and (not NoLeft):
-				#			#print "RL"
-				#			move_dir = 3;
-				#		#elif (bullet[0][0] in range(myL+9+6, myL+myW)) and (not NoRight):
-				#		elif (bullet[0][0] in range(myL+10+6, myL+myW)) and (not NoRight):
-				#			#print "RR"
-				#			move_dir = 1;
-				#		elif not NoLeft:
-				#			#print "RL"
-				#			move_dir = 3;
-				#		else:
-				#			#print "RR"
-				#			move_dir = 1;
-				#	else:
-				#		#if (bullet[0][0] in range(myL+9+6, myL+myW)) and (not NoLeft):
-				#		if (bullet[0][0] in range(myL+10+6, myL+myW)) and (not NoLeft):
-				#			#print "CL";
-				#			move_dir = 3;
-				#			shoot = 0;
-				#		#elif (bullet[0][0] in range(myL-6, myL+9-6+1)) and (not NoRight):
-				#		elif (bullet[0][0] in range(myL-6, myL+10-6+1)) and (not NoRight):
-				#			#print "CR";
-				#			move_dir = 1;
-				#			shoot = 0;
-				#		elif (bullet[0][1] < myT):
-				#			move_dir = 0;
-				#			self.Update_Strategy(c_control,0,move_dir,0);
-				#			shoot = 1;
-				#			shootDist = 0;
-				#elif(bullet[0][1] in range(myT-bullet[0][3], myT+myH)) and (bullet[1] == 1):
-				#	#print "Bullet goes Right"
-				#	if (bullet[0][0] < myL) and ((myL - bullet[0][0]) < (3*16)):
-				#		shoot = 0;
-				#		#if (bullet[0][1] in range(myT-6, myT+9-6+1)) and (not NoTop):
-				#		if (bullet[0][1] in range(myT-6, myT+10-6+1)) and (not NoTop):
-				#			#print "RU"
-				#			move_dir = 0;
-				#		#elif (bullet[0][1] in range(myT+9+6, myT+myH)) and (not NoDown):
-				#		elif (bullet[0][1] in range(myT+10+6, myT+myH)) and (not NoDown):
-				#			#print "RD"
-				#			move_dir = 2;
-				#		elif not NoTop:
-				#			#print "RU"
-				#			move_dir = 0;
-				#		else:
-				#			#print "RD"
-				#			move_dir = 2;
-				#	else:
-				#		#if (bullet[0][1] in range(myT+9+6, myT+myH)) and (not NoTop):
-				#		if (bullet[0][1] in range(myT+10+6, myT+myH)) and (not NoTop):
-				#			#print "CU";
-				#			move_dir = 0;
-				#			shoot = 0;
-				#		#elif (bullet[0][1] in range(myT-6, myT+9-6+1)) and (not NoDown):
-				#		elif (bullet[0][1] in range(myT-6, myT+10-6+1)) and (not NoDown):
-				#			#print "CD";
-				#			move_dir = 2;
-				#			shoot = 0;
-				#		elif (bullet[0][0] < myL):
-				#			move_dir = 3;
-				#			self.Update_Strategy(c_control,0,move_dir,0);
-				#			if (myT in range(flagT-myH, flagT+flagH)) and (flagL < myL):
-				#				shoot = 0;
-				#			else:
-				#				shoot = 1;
-				#				shootDist = 0;
-				#elif(bullet[0][1] in range(myT-bullet[0][3], myT+myH)) and (bullet[1] == 3):
-				##elif(bullet[0][1] in range(myT-myH, myT+2*myH)) and (bullet[1] == 1) and (bullet[0][0] < myL):
-				#	#print "Bullet goes Left"
-				#	if (bullet[0][0] > myL) and ((bullet[0][0] - myL) < (3*16)):
-				#		shoot = 0;
-				#		#if (bullet[0][1] in range(myT-6, myT+9-6+1)) and (not NoTop):
-				#		if (bullet[0][1] in range(myT-6, myT+10-6+1)) and (not NoTop):
-				#			#print "RU"
-				#			move_dir = 0;
-				#		#elif (bullet[0][1] in range(myT+9+6, myT+myH)) and (not NoDown):
-				#		elif (bullet[0][1] in range(myT+10+6, myT+myH)) and (not NoDown):
-				#			#print "RD"
-				#			move_dir = 2;
-				#		elif not NoTop:
-				#			#print "RU"
-				#			move_dir = 0;
-				#		else:
-				#			#print "RD"
-				#			move_dir = 2;
-				#	else:
-				#		#if (bullet[0][1] in range(myT+9+6, myT+myH)) and (not NoTop):
-				#		if (bullet[0][1] in range(myT+10+6, myT+myH)) and (not NoTop):
-				#			#print "CU";
-				#			move_dir = 0;
-				#			shoot = 0;
-				#		#elif (bullet[0][1] in range(myT-6, myT+9-6+1)) and (not NoDown):
-				#		elif (bullet[0][1] in range(myT-6, myT+10-6+1)) and (not NoDown):
-				#			#print "CD";
-				#			move_dir = 2;
-				#			shoot = 0;
-				#		elif (bullet[0][0] > myL):
-				#			move_dir = 1;
-				#			self.Update_Strategy(c_control,0,move_dir,0);
-				#			if (myT in range(flagT-myH, flagT+flagH)) and (flagL > myL):
-				#				shoot = 0;
-				#			else:
-				#				shoot = 1;
-				#				shootDist = 0;
 				if (bullet[0][0] in range(myL-bullet[0][2]-1, myL+myW+1)) and (bullet[1] == 0) and ((myT+myH) < (bullet[0][1]+bullet[0][3])):
-					#print "Bullet comes Up"
+					print "Bullet comes Up"
 					#if (bullet[0][0] in range(myL-bullet[0][2]-1, myL+9-bullet[0][2])):
 					if (bullet[0][0] in range(myL-bullet[0][2]-1, myL+10-bullet[0][2])):
 						#if not NoLeft:
 						if not NoRight:
-							#print "run R"
+							print "run R"
 							move_dir = 1
 							shoot = 0
 						else:
-							#print "close L"
+							print "close L"
 							move_dir = 3
 							shoot = 0
 					#elif (bullet[0][0] in range(myL+9+6, myL+myW+1)):
 					elif (bullet[0][0] in range(myL+10+6, myL+myW+1)):
 						#if not NoRight:
 						if not NoLeft:
-							#print "run L"
+							print "run L"
 							move_dir = 3
 							shoot = 0
 						else:
-							#print "close R"
+							print "close R"
 							move_dir = 1
 							shoot = 0
 					else:
@@ -592,27 +438,27 @@ class ai_agent():
 						shootDist = 0
 						#self.Update_Strategy(c_control,0,move_dir,0)
 				elif (bullet[0][0] in range(myL-bullet[0][2]-1, myL+myW+1)) and (bullet[1] == 2) and (bullet[0][1] < myT):
-					#print "Bullet comes Down"
+					print "Bullet comes Down"
 					#if (bullet[0][0] in range(myL-bullet[0][2]-1, myL+9-bullet[0][2])):
 					if (bullet[0][0] in range(myL-bullet[0][2]-1, myL+10-bullet[0][2])):
 						#if not NoLeft:
 						if not NoRight:
-							#print "run R"
+							print "run R"
 							move_dir = 1
 							shoot = 0
 						else:
-							#print "close L"
+							print "close L"
 							move_dir = 3
 							shoot = 0
 					#elif (bullet[0][0] in range(myL+9+6, myL+myW+1)):
 					elif (bullet[0][0] in range(myL+10+6, myL+myW+1)):
 						#if not NoRight:
 						if not NoLeft:
-							#print "run L"
+							print "run L"
 							move_dir = 3
 							shoot = 0
 						else:
-							#print "close R"
+							print "close R"
 							move_dir = 1
 							shoot = 0
 					else:
@@ -622,257 +468,226 @@ class ai_agent():
 						shootDist = 0
 						#self.Update_Strategy(c_control,0,move_dir,0)
 				elif (bullet[0][1] in range(myT-bullet[0][3]-1, myT+myH+1)) and (bullet[1] == 3) and ((myL+myW) < (bullet[0][0]+bullet[0][2])):
-					#print "Bullet comes Left"
+					print "Bullet comes Left"
 					#if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+9-bullet[0][3])):
 					if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+10-bullet[0][3])):
 						#if not NoDown:
 						if not NoTop:
-							#print "run T"
+							print "run T"
 							move_dir = 0
 							shoot = 0
 						else:
-							#print "close D"
+							print "close D"
 							move_dir = 2
 							shoot = 0
 					#elif (bullet[0][1] in range(myT+9+6, myT+myH+1)):
 					elif (bullet[0][1] in range(myT+10+6, myT+myH+1)):
 						#if not NoTop:
 						if not NoDown:
-							#print "run D"
+							print "run D"
 							move_dir = 2
 							shoot = 0
 						else:
-							#print "close T"
+							print "close T"
 							move_dir = 0
 							shoot = 0
 					else:
 						move_dir = 1
 						shoot = 1
 						#shootDist = bullet[0][0]-(myL+myW)
-						shootDist = 0
+						if (myT in range(flagT-myH, flagT+flagH)) and (myL < flagL) and (flagL < bullet[0][0]):
+							shootDist = 100
+						else:
+							shootDist = 0
 						#self.Update_Strategy(c_control,0,move_dir,0)
 				elif (bullet[0][1] in range(myT-bullet[0][3]-1, myT+myH+1)) and (bullet[1] == 1) and (bullet[0][0] < myL):
-					#print "Bullet comes Right"
+					print "Bullet comes Right"
 					#if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+9-bullet[0][3])):
 					if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+10-bullet[0][3])):
 						#if not NoDown:
 						if not NoTop:
-							#print "run T"
+							print "run T"
 							move_dir = 0
 							shoot = 0
 						else:
-							#print "close D"
+							print "close D"
 							move_dir = 2
 							shoot = 0
 					#elif (bullet[0][1] in range(myT+9+6, myT+myH+1)):
 					elif (bullet[0][1] in range(myT+10+6, myT+myH+1)):
 						#if not NoTop:
 						if not NoDown:
-							#print "run D"
+							print "run D"
 							move_dir = 2
 							shoot = 0
 						else:
-							#print "close T"
+							print "close T"
 							move_dir = 0
 							shoot = 0
 					else:
 						move_dir = 3
 						shoot = 1
 						#shootDist = bullet[0][0]-(myL+myW)
-						shootDist = 0
+						if (myT in range(flagT-myH, flagT+flagH)) and (flagL < myL) and (bullet[0][0] < flagL):
+							shootDist = 100
+						else:
+							shootDist = 0
 						#self.Update_Strategy(c_control,0,move_dir,0)
+			## Go around ##
+			## Check block or not ##
+			if (move_dir == 0) and NoTop and (shoot == 0):
+				print ("No way top", NoTop_tile)
+				if ((myL+10+6)< NoTop_tile[0][0]) and (NoTop_tile[1] == 1):
+					print "Shoot Top Wall (R)"
+					move_dir = 1
+					shoot = 0
+				elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) <= (myL+10+1)) and (NoTop_tile[1] == 1):
+					print "Shoot Top Wall (L)"
+					move_dir = 3
+					shoot = 0
+				elif (NoTop_tile[1] == 1):
+					move_dir = 0;
+					shoot = 1;
+					shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
+					print "Shoot T wall"
+					#self.Update_Strategy(c_control,0,move_dir,0);
+				else:
+					print "Unknown block!?"
+			elif (move_dir == 1) and NoRight and (shoot == 0):
+				print ("No way right", NoRight_tile)
+				if ((myT+10+6) < NoRight_tile[0][1]) and (NoRight_tile[1] == 1):
+					print "Shoot Right Wall (D)"
+					move_dir = 2
+					shoot = 0
+				elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) <= (myT+10+1)) and (NoRight_tile[1] == 1):
+					print "Shoot Right Wall (U)"
+					move_dir = 0
+					shoot = 0
+				elif (NoRight_tile[1] == 1):
+					move_dir = 1;
+					#if (myT > (flagT-(flagH/2))) and (flagL > myL):
+					#	shoot = 0;
+					#else:
+					shoot = 1;
+					shootDist = NoRight_tile[0][0]-(myL+myW)
+					print "Shoot R wall"
+				else:
+					print "Unknown block!?"
+			elif (move_dir == 2) and NoDown and (shoot == 0):
+				print ("No way down", NoDown_tile)
+				if ((myL+10+6)< NoDown_tile[0][0]) and (NoDown_tile[1] == 1):
+					print "Shoot Down Wall (R)"
+					move_dir = 1
+					shoot = 0
+				elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) <= (myL+10+1)) and (NoDown_tile[1] == 1):
+					print "Shoot Down Wall (L)"
+					move_dir = 3
+					shoot = 0
+				elif (NoDown_tile[1] == 1):
+					move_dir = 2;
+					#if (myL in range(flagL-myW, flagL+flagW)) and (myT < (22*16)):
+					#	shoot = 0;
+					#else:
+					shoot = 1;
+					shootDist = NoDown_tile[0][1]-(myT+myH)
+					print "Shoot D wall"
+				else:
+					print "Unknown block!?"
+			elif (move_dir == 3) & NoLeft & (shoot == 0):
+				print ("No way left", NoLeft_tile)
+				if ((myT+10+6) < NoLeft_tile[0][1]) and (NoLeft_tile[1] == 1):
+					print "Shoot Left Wall (D)"
+					move_dir = 2
+					shoot = 0
+				elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) <= (myT+10+1)) and (NoLeft_tile[1] == 1):
+					print "Shoot Left Wall (U)"
+					move_dir = 0
+					shoot = 0
+				elif (NoLeft_tile[1] == 1):
+					move_dir = 3;
+					#if (myT > (flagT-(flagH/2))) and (flagL < myL):
+					#	shoot = 0;
+					#else:
+					shoot = 1;
+					shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
+					print "Shoot L wall"
+				else:
+					print "Unknown block!?"
 			## Final Check: Move_dir ##
 			if move_dir == 0:
 				# check if any other enemies/bullets in the front row
-				#careful = False;
-				for i in range(0, len(self.mapinfo[0]), 1):
-					bullet = self.mapinfo[0][i];
+				for bullet in self.mapinfo[0]:
 					if (bullet[0][1] in range(myT-2*bullet[0][3], myT-bullet[0][3]-1)) and ((bullet[1]==1) or (bullet[1]==3)):
-					#if ((bullet[0][1] + bullet[0][3]) in range(myT-bullet[0][3], myT+bullet[0][3])) and ((bullet[1]==1) or (bullet[1]==3)):
-					#if ((bullet[0][1] + bullet[0][3]) in range(myT-bullet[0][3], myT+bullet[0][3])):
 						if (bullet[0][0] < myL) and (bullet[1] == 1):
-							#print "Take care! bullet!"
-							move_dir = 4;
+							print "Take care! bullet!"
+							move_dir = 4
 						elif (bullet[0][0] > myL) and (bullet[1] == 3):
-							#print "Take care! bullet!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
-				for i in range(0, len(self.mapinfo[1]), 1):
-					enemy = self.mapinfo[1][i];
+							print "Take care! bullet!"
+							move_dir = 4
+				for enemy in self.mapinfo[1]:
 					if ((enemy[0][1] + enemy[0][3]) in range(myT-6, myT+6)) and ((enemy[1]==1) or (enemy[1]==3)):
 						if (enemy[0][0] < myL) and (enemy[1] == 1):
-							#print "Take care! enemy!"
-							move_dir = 4;
+							print "Take care! enemy!"
+							move_dir = 4
 						elif (enemy[0][0] > myL) and (enemy[1] == 3):
-							#print "Take care! enemy!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
+							print "Take care! enemy!"
+							move_dir = 4
 			elif move_dir == 2:
 				# check if any other enemies/bullets in the front row
-				#careful = False;
-				for i in range(0, len(self.mapinfo[0]), 1):
-					bullet = self.mapinfo[0][i];
+				for bullet in self.mapinfo[0]:
 					if (bullet[0][1] in range(myT+myH+1, myT+myH+bullet[0][3])) and ((bullet[1]==1) or (bullet[1]==3)):
-					#if (bullet[0][1] in range(myT+myH-bullet[0][3], myT+myH+bullet[0][3])) and ((bullet[1]==1) or (bullet[1]==3)):
 						if (bullet[0][0] < myL) and (bullet[1] == 1):
-							#print "Take care! bullet!"
-							move_dir = 4;
+							print "Take care! bullet!"
+							move_dir = 4
 						elif (bullet[0][0] > myL) and (bullet[1] == 3):
-							#print "Take care! bullet!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
-				for i in range(0, len(self.mapinfo[1]), 1):
-					enemy = self.mapinfo[1][i];
+							print "Take care! bullet!"
+							move_dir = 4
+				for enemy in self.mapinfo[1]:
 					if (enemy[0][1] in range(myT+myH-6, myT+myH+6)) and ((enemy[1]==1) or (enemy[1]==3)):
 						if (enemy[0][0] < myL) and (enemy[1] == 1):
-							#print "Take care! enemy!"
-							move_dir = 4;
+							print "Take care! enemy!"
+							move_dir = 4
 						elif (enemy[0][0] > myL) and (enemy[1] == 3):
-							#print "Take care! enemy!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
+							print "Take care! enemy!"
+							move_dir = 4
 			elif move_dir == 1:
 				# check if any other enemies/bullets in the front column
-				#careful = False;
-				for i in range(0, len(self.mapinfo[0]), 1):
-					bullet = self.mapinfo[0][i];
+				for bullet in self.mapinfo[0]:
 					if (bullet[0][0] in range(myL+myW+1, myL+myW+bullet[0][2])) and ((bullet[1]==0) or (bullet[1]==2)):
-					#if (bullet[0][0] in range(myL+myW-bullet[0][2], myL+myW+bullet[0][2])) and ((bullet[1]==0) or (bullet[1]==2)):
 						if (bullet[0][1] < myT) and (bullet[1] == 2):
-							#print "Take care! bullet!"
-							move_dir = 4;
+							print "Take care! bullet!"
+							move_dir = 4
 						elif (bullet[0][1] > myT) and (bullet[1] == 0):
-							#print "Take care! bullet!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
-				for i in range(0, len(self.mapinfo[1]), 1):
-					enemy = self.mapinfo[1][i];
+							print "Take care! bullet!"
+							move_dir = 4
+				for enemy in self.mapinfo[1]:
 					if (enemy[0][0] in range(myL+myW-6, myL+myW+6)) and ((enemy[1]==0) or (enemy[1]==2)):
 						if (enemy[0][1] < myT) and (enemy[1] == 2):
-							#print "Take care! enemy!"
-							move_dir = 4;
+							print "Take care! enemy!"
+							move_dir = 4
 						elif (enemy[0][1] > myT) and (enemy[1] == 0):
-							#print "Take care! enemy!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
+							print "Take care! enemy!"
+							move_dir = 4
 			elif move_dir == 3:
 				# check if any other enemies/bullets in the front column
-				#careful = False;
-				for i in range(0, len(self.mapinfo[0]), 1):
-					bullet = self.mapinfo[0][i];
+				for bullet in self.mapinfo[0]:
 					if (bullet[0][0] in range(myL-2*bullet[0][2], myL-bullet[0][2]-1)) and ((bullet[1]==0) or (bullet[1]==2)):
-					#if ((bullet[0][0] + bullet[0][2]) in range(myL-bullet[0][2], myL+bullet[0][2])) and ((bullet[1]==0) or (bullet[1]==2)):
 						if (bullet[0][1] < myT) and (bullet[1] == 2):
-							#print "Take care! bullet!"
-							move_dir = 4;
+							print "Take care! bullet!"
+							move_dir = 4
 						elif (bullet[0][1] > myT) and (bullet[1] == 0):
-							#print "Take care! bullet!"
-							move_dir = 4;
-						#shoot = 0;
-				#		careful = True;
-				for i in range(0, len(self.mapinfo[1]), 1):
-					enemy = self.mapinfo[1][i];
+							print "Take care! bullet!"
+							move_dir = 4
+				for enemy in self.mapinfo[1]:
 					if ((enemy[0][0] + enemy[0][2]) in range(myL-6, myL+6)) and ((enemy[1]==0) or (enemy[1]==2)):
 						if (enemy[0][1] < myT) and (enemy[1] == 2):
-							#print "Take care! enemy!"
-							move_dir = 4;
+							print "Take care! enemy!"
+							move_dir = 4
 						elif (enemy[0][1] > myT) and (enemy[1] == 0):
-							#print "Take care! enemy!"
-							move_dir = 4;
+							print "Take care! enemy!"
+							move_dir = 4
 						#shoot = 0;
 				#		careful = True;
-			#for bullet in self.mapinfo[0]:
-			#	if ((bullet[1] == 1) or (bullet[1] == 3)) and (bullet[0][0] in range(myL-bullet[0][2]-1, myL+myW+1)):
-			#		if (move_dir == 0) and ((bullet[0][1]+bullet[0][3]) in range(myT-3, myT-1)):
-			#			#print "Take care Top! bullet ===="
-			#			move_dir = 4
-			#		elif (move_dir == 2) and (bullet[0][1] in range(myT+myH+1, myT+myH+3)):
-			#			#print "Take care Down! bullet ===="
-			#			move_dir = 4
-			#	elif (bullet[1] == 1) and ((bullet[0][0]+bullet[0][2]) < myL):
-			#		if (move_dir == 0) and ((bullet[0][1]+bullet[0][3]) in range(myT-3, myT-1)):
-			#			#print "Take care Top! bullet >>>>"
-			#			move_dir = 4
-			#		elif (move_dir == 2) and (bullet[0][1] in range(myT+myH+1, myT+myH+3)):
-			#			#print "Take care Down! bullet >>>>"
-			#			move_dir = 4
-			#	elif (bullet[1] == 3) and ((myL+myW) < bullet[0][0]):
-			#		if (move_dir == 0) and ((bullet[0][1]+bullet[0][3]) in range(myT-3, myT-1)):
-			#			#print "Take care Top! bullet <<<"
-			#			move_dir = 4
-			#		elif (move_dir == 2) and (bullet[0][1] in range(myT+myH+1, myT+myH+3)):
-			#			#print "Take care Down! bullet <<<<"
-			#			move_dir = 4
-			#	elif ((bullet[1] == 0) or (bullet[1] == 2)) and (bullet[0][1] in range (myT-bullet[0][3]-1, myT+myH+1)):
-			#		if (move_dir == 1) and (bullet[0][0] in range(myL+myW+1, myL+myW+3)):
-			#			#print "Take care Right! bullet ===="
-			#			move_dir = 4
-			#		elif (move_dir == 3) and ((bullet[0][0]+bullet[0][2]) in range(myL-3, myL-1)):
-			#			#print "Take care Left! bullet ===="
-			#			move_dir = 4
-			#	elif (bullet[1] == 0) and ((myT+myH) < bullet[0][1]):
-			#		if (move_dir == 1) and (bullet[0][0] in range(myL+myW+1, myL+myW+3)):
-			#			#print "Take care Right! bullet ^^^^"
-			#			move_dir = 4
-			#		elif (move_dir == 3) and ((bullet[0][0]+bullet[0][2]) in range(myL-3, myL-1)):
-			#			#print "Take care Left! bullet ^^^^"
-			#			move_dir = 4
-			#	elif (bullet[1] == 2) and ((bullet[0][1]+bullet[0][3]) < myT):
-			#		if (move_dir == 1) and (bullet[0][0] in range(myL+myW+1, myL+myW+3)):
-			#			#print "Take care Right! bullet vvvv"
-			#			move_dir = 4
-			#		elif (move_dir == 3) and ((bullet[0][0]+bullet[0][2]) in range(myL-3, myL-1)):
-			#			#print "Take care Left! bullet vvvv"
-			#			move_dir = 4
-			#for enemy in self.mapinfo[1]:
-			#	if ((enemy[1] == 1) or (enemy[1] == 3)) and (enemy[0][0] in range(myL-enemy[0][2]-1, myL+myW+1)):
-			#		if (move_dir == 0) and ((enemy[0][1]+enemy[0][3]) in range(myT-3, myT-1)):
-			#			#print "Take care Top! enemy ===="
-			#			move_dir = 4
-			#		elif (move_dir == 2) and (enemy[0][1] in range(myT+myH+1, myT+myH+3)):
-			#			#print "Take care Down! enemy ===="
-			#			move_dir = 4
-			#	elif (enemy[1] == 1) and ((enemy[0][0]+enemy[0][2]) < myL):
-			#		if (move_dir == 0) and ((enemy[0][1]+enemy[0][3]) in range(myT-3, myT-1)):
-			#			#print "Take care Top! enemy >>>>"
-			#			move_dir = 4
-			#		elif (move_dir == 2) and (enemy[0][1] in range(myT+myH+1, myT+myH+3)):
-			#			#print "Take care Down! enemy >>>>"
-			#			move_dir = 4
-			#	elif (enemy[1] == 3) and ((myL+myW) < enemy[0][0]):
-			#		if (move_dir == 0) and ((enemy[0][1]+enemy[0][3]) in range(myT-3, myT-1)):
-			#			#print "Take care Top! enemy <<<"
-			#			move_dir = 4
-			#		elif (move_dir == 2) and (enemy[0][1] in range(myT+myH+1, myT+myH+3)):
-			#			#print "Take care Down! enemy <<<<"
-			#			move_dir = 4
-			#	elif ((enemy[1] == 0) or (enemy[1] == 2)) and (enemy[0][1] in range (myT-enemy[0][3]-1, myT+myH+1)):
-			#		if (move_dir == 1) and (enemy[0][0] in range(myL+myW+1, myL+myW+3)):
-			#			#print "Take care Right! enemy ===="
-			#			move_dir = 4
-			#		elif (move_dir == 3) and ((enemy[0][0]+enemy[0][2]) in range(myL-3, myL-1)):
-			#			#print "Take care Left! enemy ===="
-			#			move_dir = 4
-			#	elif (enemy[1] == 0) and ((myT+myH) < enemy[0][1]):
-			#		if (move_dir == 1) and (enemy[0][0] in range(myL+myW+1, myL+myW+3)):
-			#			#print "Take care Right! enemy ^^^^"
-			#			move_dir = 4
-			#		elif (move_dir == 3) and ((enemy[0][0]+enemy[0][2]) in range(myL-3, myL-1)):
-			#			#print "Take care Left! enemy ^^^^"
-			#			move_dir = 4
-			#	elif (enemy[1] == 2) and ((enemy[0][1]+enemy[0][3]) < myT):
-			#		if (move_dir == 1) and (enemy[0][0] in range(myL+myW+1, myL+myW+3)):
-			#			#print "Take care Right! enemy vvvv"
-			#			move_dir = 4
-			#		elif (move_dir == 3) and ((enemy[0][0]+enemy[0][2]) in range(myL-3, myL-1)):
-			#			#print "Take care Left! enemy vvvv"
-			#			move_dir = 4
 			## Detect enemy around ##
 			if shoot == 0:
 				for enemy in self.mapinfo[1]:
