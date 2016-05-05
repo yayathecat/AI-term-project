@@ -692,6 +692,9 @@ class ai_agent():
 				else:
 					move_dir = GoRound
 					shoot = 0
+			if len(GetAwayStack) > 10:
+				while len(GetAwayStack) != 0:
+					GetAwayStack.pop()
 			## Check block or not ##
 			#if (move_dir == 0) and NoTop and (shoot == 0):
 			if (move_dir == 0) and NoTop:
@@ -700,7 +703,19 @@ class ai_agent():
 					nextD1 = self.PathDecision(1,0)
 					nextD2 = self.PathDecision(3,0)
 					WantTo = 0
-					if nextD1[1] < nextD2[1]:
+					if (nextD1[0] == 2) and (nextD2[0] == 2):
+						GoRound = 1
+						move_dir = 1
+						shoot = 0
+					elif nextD1[0] == 2:
+						GoRound = nextD2[0]
+						move_dir = nextD2[0]
+						shoot = 0
+					elif nextD2[0] == 2:
+						GoRound = nextD1[0]
+						move_dir = nextD1[0]
+						shoot = 0
+					elif nextD1[1] < nextD2[1]:
 						#print ("Go ", nextD1, nextD2)
 						GoRound = nextD1[0]
 						move_dir = nextD1[0]
@@ -730,10 +745,22 @@ class ai_agent():
 			elif (move_dir == 1) and NoRight:
 				#print ("No way right", NoRight_tile)
 				if (NoRight_tile[1] != 1) and (NoRight_tile[1] != 4):
-					nextD1 = self.PathDecision(1,2)
-					nextD2 = self.PathDecision(3,2)
-					WantTo = 0
-					if nextD1[1] < nextD2[1]:
+					nextD1 = self.PathDecision(1,0)
+					nextD2 = self.PathDecision(1,2)
+					WantTo = 1
+					if (nextD1[0] == 3) and (nextD2[0] == 3):
+						GoRound = 0
+						move_dir = 0
+						shoot = 0
+					elif nextD1[0] == 3:
+						GoRound = nextD2[0]
+						move_dir = nextD2[0]
+						shoot = 0
+					elif nextD2[0] == 3:
+						GoRound = nextD1[0]
+						move_dir = nextD1[0]
+						shoot = 0
+					elif nextD1[1] < nextD2[1]:
 						#print ("Go ", nextD1[0])
 						GoRound = nextD1[0]
 						move_dir = nextD1[0]
@@ -765,10 +792,22 @@ class ai_agent():
 			elif (move_dir == 2) and NoDown:
 				#print ("No way down", NoDown_tile)
 				if (NoDown_tile[1] != 1) and (NoDown_tile[1] != 4):
-					nextD1 = self.PathDecision(1,0)
-					nextD2 = self.PathDecision(1,2)
-					WantTo = 0
-					if nextD1[1] < nextD2[1]:
+					nextD1 = self.PathDecision(1,2)
+					nextD2 = self.PathDecision(3,2)
+					WantTo = 2
+					if (nextD1[0] == 0) and (nextD2[0] == 0):
+						GoRound = 1
+						move_dir = 1
+						shoot = 0
+					elif nextD1[0] == 0:
+						GoRound = nextD2[0]
+						move_dir = nextD2[0]
+						shoot = 0
+					elif nextD2[0] == 0:
+						GoRound = nextD1[0]
+						move_dir = nextD1[0]
+						shoot = 0
+					elif nextD1[1] < nextD2[1]:
 						#print ("Go ", nextD1[0])
 						GoRound = nextD1[0]
 						move_dir = nextD1[0]
@@ -802,8 +841,20 @@ class ai_agent():
 				if (NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4):
 					nextD1 = self.PathDecision(3,0)
 					nextD2 = self.PathDecision(3,2)
-					WantTo = 0
-					if nextD1[1] < nextD2[1]:
+					WantTo = 3
+					if (nextD1[0] == 1) and (nextD2[0] == 1):
+						GoRound = 0
+						move_dir = 0
+						shoot = 0
+					elif nextD1[0] == 3:
+						GoRound = nextD2[0]
+						move_dir = nextD2[0]
+						shoot = 0
+					elif nextD2[0] == 3:
+						GoRound = nextD1[0]
+						move_dir = nextD1[0]
+						shoot = 0
+					elif nextD1[1] < nextD2[1]:
 						#print ("Go ", nextD1[0])
 						GoRound = nextD1[0]
 						move_dir = nextD1[0]
