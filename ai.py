@@ -26,9 +26,13 @@ class ai_agent():
 			
 			
 	def operations (self,p_mapinfo,c_control):	
-
+		# push [WantTo, GoRound]
+		GetAwayStack = []
 		WantTo = 4
 		GoRound = 4
+		preD = 1
+		preL = -1
+		preT = -1
 	
 		while True:
 		#-----your ai operation,This code is a random strategy,please design your ai !!-----------------------			
@@ -51,6 +55,10 @@ class ai_agent():
 			NoDown = False
 			NoLeft = False
 			NoRight = False
+			BoundTop = False
+			BoundDown = False
+			BoundLeft = False
+			BoundRight = False
 			NoTop_tile = self.mapinfo[2][0]
 			NoTop_tile[1] = 6
 			NoDown_tile = self.mapinfo[2][0]
@@ -65,14 +73,22 @@ class ai_agent():
 			danger_flag = False
 			danger_enemy = self.mapinfo[3][0]
 			## Check if path for 4 direction ##
-			if (myL <= 2) or ((myL in range(flagL+flagW-1, flagL+flagW+3+3)) and (myT in range(flagT-myH, flagT+flagH))):
-				NoLeft = True;
-			elif ((myL+myW) >= (26*16-2)) or (((myL+myW) in range(flagL-3-3, flagL+1)) and (myT in range(flagT-myH, flagT+flagH))):
-				NoRight = True;
-			if (myT <= 2):
-				NoTop = True;
-			elif ((myT+myH) >= (26*16-2)) or (((myT+myH) in range(flagT-3-3, flagT+1)) and (myL in range(flagL-myW, flagL+flagW))):
-				NoDown = True;
+			if (myL < 3) or ((myL in range(flagL+flagW-1, flagL+flagW+3+3)) and (myT in range(flagT-myH, flagT+flagH))):
+				NoLeft = True
+				if (myL < 3):
+					BoundLeft = True
+			elif ((myL+myW) > (26*16-3)) or (((myL+myW) in range(flagL-3-3, flagL+1)) and (myT in range(flagT-myH, flagT+flagH))):
+				NoRight = True
+				if ((myL+myW) > (26*16-3)):
+					BoundRight = True
+			if (myT < 3):
+				NoTop = True
+				BoundTop = True
+			elif ((myT+myH) > (26*16-3)) or (((myT+myH) in range(flagT-3-3, flagT+1)) and (myL in range(flagL-myW, flagL+flagW))):
+				NoDown = True
+				#print "No Down!!"
+				if ((myT+myH) > (26*16-3)):
+					BoundDown = True
 			# tiles
 			for tile in self.mapinfo[2]:
 				if ((tile[0][0] in range(myL, myL+myW)) or ((tile[0][0]+tile[0][2]) in range(myL, myL+myW))) and (tile[1] != 4):
@@ -232,15 +248,71 @@ class ai_agent():
 					shoot = 1;
 					shootDist = NoDown_tile[0][1]-(myT+myH)
 					#print "Shoot D wall"
-			#else:
+			elif (WantTo == 4):
+				#if (enemyT < myT) and (enemyL < myL) and NoTop and NoLeft and (not BoundTop) and (not BoundLeft):
+				if (enemyT < myT) and (enemyL < myL) and NoTop and NoLeft:
+					#if (not NoRight) and (self.mapinfo[3][0][1] != 1):
+					#if not NoRight:
+					if not NoRight and (preD == 0):
+						print "Stuck at LT (to R)"
+						GoRound = 1
+						WantTo = 0
+						preD = 1
+					else:
+						print "Stuck at LT (to D)"
+						GoRound = 2
+						WantTo = 3
+						preD = 0
+				#elif (enemyT < myT) and (myL < enemyL) and NoTop and NoRight and (not BoundTop) and (not BoundRight):
+				elif (enemyT < myT) and (myL < enemyL) and NoTop and NoRight:
+					#if (not NoLeft) and (self.mapinfo[3][0][1] != 3):
+					#if not NoLeft:
+					if not NoLeft and (preD == 0):
+						print "Stuck at RT (to L)"
+						GoRound = 3
+						WantTo = 0
+						preD = 1
+					else:
+						print "Stuck at RT (to D)"
+						GoRound = 2
+						WantTo = 1
+						preD = 0
+				#elif (myT < enemyT) and (enemyL < myL) and NoDown and NoLeft and (not BoundDown) and (not BoundLeft):
+				elif (myT < enemyT) and (enemyL < myL) and NoDown and NoLeft:
+					#if (not NoRight) and (self.mapinfo[3][0][1] != 1):
+					#if not NoRight:
+					if not NoRight and (preD == 0):
+						print "Stuck at LD (to R)"
+						GoRound = 1
+						WantTo = 2
+						preD = 1
+					else:
+						print "Stuck at LD (to T)"
+						GoRound = 0
+						WantTo = 3
+						preD = 0
+				#elif (myT < enemyT) and (myL < enemyL) and NoDown and NoRight and (not BoundDown) and (not BoundRight):
+				elif (myT < enemyT) and (myL < enemyL) and NoDown and NoRight:
+					#if (not NoLeft) and (self.mapinfo[3][0][1] != 3):
+					#if not NoLeft:
+					if not NoLeft and (preD == 0):
+						print "Stuck at RD (to L)"
+						GoRound = 3
+						WantTo = 2
+						preD = 1
+					else:
+						print "Stuck at RD (to T)"
+						GoRound = 0
+						WantTo = 1
+						preD = 0
 			#	if NoTop:
-			#		print ("Top:",NoTop_tile[1])
+			#		#print ("Top:",NoTop_tile[1])
 			#	if NoRight:
-			#		print ("Right:",NoRight_tile[1])
+			#		#print ("Right:",NoRight_tile[1])
 			#	if NoDown:
-			#		print ("Down:",NoDown_tile[1])
+			#		#print ("Down:",NoDown_tile[1])
 			#	if NoLeft:
-			#		print ("Left:",NoLeft_tile[1])
+			#		#print ("Left:",NoLeft_tile[1])
 				
 			## Check around ##
 			# Enemies #
@@ -258,23 +330,23 @@ class ai_agent():
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
 						
-						if NoTop & (NoTop_tile[1] == 1):
-							if ((myL+10+6)< NoTop_tile[0][0]):
-								#print "Shoot Top Wall (R)"
-								move_dir = 1
-								shoot = 0
-							#elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) < (myL+9+1)):
-							elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) <= (myL+10+1)):
-								#print "Shoot Top Wall (L)"
-								move_dir = 3
-								shoot = 0
-							else:
-								move_dir = 0;
-								shoot = 1;
-								#shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
-								shootDist = 0
-								#print "Shoot T wall"
-								#self.Update_Strategy(c_control,0,move_dir,0);
+					#	if NoTop & (NoTop_tile[1] == 1):
+					#		if ((myL+10+6)< NoTop_tile[0][0]):
+					#			#print "Shoot Top Wall (R)"
+					#			move_dir = 1
+					#			shoot = 0
+					#		#elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) < (myL+9+1)):
+					#		elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) <= (myL+10+1)):
+					#			#print "Shoot Top Wall (L)"
+					#			move_dir = 3
+					#			shoot = 0
+					#		else:
+					#			move_dir = 0;
+					#			shoot = 1;
+					#			#shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
+					#			shootDist = 0
+					#			#print "Shoot T wall"
+					#			#self.Update_Strategy(c_control,0,move_dir,0);
 						
 					elif (myT < enemy[0][1]):
 						#print "Find enemy on the Down"
@@ -285,29 +357,31 @@ class ai_agent():
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
 						
-						if NoDown & (NoDown_tile[1] == 1):
-							if ((myL+10+6)< NoDown_tile[0][0]):
-								#print "Shoot Down Wall (R)"
-								move_dir = 1
-								shoot = 0
-							elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) <= (myL+10+1)):
-								#print "Shoot Down Wall (L)"
-								move_dir = 3
-								shoot = 0
-							else:
-								move_dir = 2;
-								#if (myL in range(flagL-myW, flagL+flagW)) and (myT < (22*16)):
-								#	shoot = 0;
-								#else:
-								shoot = 1;
-								#shootDist = NoDown_tile[0][1]-(myT+myH)
-								shootDist = 0
+					#	if NoDown & (NoDown_tile[1] == 1):
+					#		if ((myL+10+6)< NoDown_tile[0][0]):
+					#			#print "Shoot Down Wall (R)"
+					#			move_dir = 1
+					#			shoot = 0
+					#		elif ((NoDown_tile[0][0]+NoDown_tile[0][2]) <= (myL+10+1)):
+					#			#print "Shoot Down Wall (L)"
+					#			move_dir = 3
+					#			shoot = 0
+					#		else:
+					#			move_dir = 2;
+					#			#if (myL in range(flagL-myW, flagL+flagW)) and (myT < (22*16)):
+					#			#	shoot = 0;
+					#			#else:
+					#			shoot = 1;
+					#			#shootDist = NoDown_tile[0][1]-(myT+myH)
+					#			shootDist = 0
 						
 				elif (enemy_bulletL in range(myL-6-1, myL+10-6)) and (((enemy[0][1] < myT) and (enemy[1] == 2)) or ((myT < enemy[0][1]) and (enemy[1] == 0))):
 					if not NoRight:
 						#print "Erun R"
 						move_dir = 1
 						shoot = 0
+						self.Update_Strategy(c_control,0,move_dir,0)
+						continue
 					else:
 						#print "Eclose L"
 						move_dir = 3
@@ -317,6 +391,8 @@ class ai_agent():
 						#print "Erun L"
 						move_dir = 3
 						shoot = 0
+						self.Update_Strategy(c_control,0,move_dir,0)
+						continue
 					else:
 						#print "Eclose R"
 						move_dir = 1
@@ -333,27 +409,27 @@ class ai_agent():
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
 						
-						if NoLeft & (NoLeft_tile[1] == 1):
-							if ((myT+10+6) < NoLeft_tile[0][1]):
-								#print "Shoot Left Wall (D)"
-								move_dir = 2
-								shoot = 0
-							elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) <= (myT+10+1)):
-								#print "Shoot Left Wall (U)"
-								move_dir = 0
-								shoot = 0
-							else:
-								move_dir = 3;
-								#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL < myL):
-								#if (myT > (flagT-(flagH/2))) and (flagL < myL):
-								#	shoot = 0;
-								#else:
-								shoot = 1;
-								#shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
-								shootDist = 0
-								#print "Shoot L wall"
-								#self.Update_Strategy(c_control,0,move_dir,0);
-								#self.Update_Strategy(c_control,shoot,move_dir,0);
+					#	if NoLeft & (NoLeft_tile[1] == 1):
+					#		if ((myT+10+6) < NoLeft_tile[0][1]):
+					#			#print "Shoot Left Wall (D)"
+					#			move_dir = 2
+					#			shoot = 0
+					#		elif ((NoLeft_tile[0][1]+NoLeft_tile[0][3]) <= (myT+10+1)):
+					#			#print "Shoot Left Wall (U)"
+					#			move_dir = 0
+					#			shoot = 0
+					#		else:
+					#			move_dir = 3;
+					#			#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL < myL):
+					#			#if (myT > (flagT-(flagH/2))) and (flagL < myL):
+					#			#	shoot = 0;
+					#			#else:
+					#			shoot = 1;
+					#			#shootDist = myL-(NoLeft_tile[0][0]+NoLeft_tile[0][2])
+					#			shootDist = 0
+					#			#print "Shoot L wall"
+					#			#self.Update_Strategy(c_control,0,move_dir,0);
+					#			#self.Update_Strategy(c_control,shoot,move_dir,0);
 						
 					elif (myL < enemy[0][0]):
 						#print "Find enemy on the Right"
@@ -364,33 +440,35 @@ class ai_agent():
 							shootDist = shootDist / 2
 						#self.Update_Strategy(c_control,0,move_dir,0)
 						
-						if NoRight & (NoRight_tile[1] == 1):
-							if ((myT+10+6) < NoRight_tile[0][1]):
-								#print "Shoot Right Wall (D)"
-								move_dir = 2
-								shoot = 0
-							elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) <= (myT+10+1)):
-								#print "Shoot Right Wall (U)"
-								move_dir = 0
-								shoot = 0
-							else:
-								move_dir = 1;
-								#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL > myL):
-								#if (myT > (flagT-(flagH/2))) and (flagL > myL):
-								#	shoot = 0;
-								#else:
-								shoot = 1;
-								#shootDist = NoRight_tile[0][0]-(myL+myW)
-								shootDist = 0
-								#print "Shoot R wall"
-								#self.Update_Strategy(c_control,0,move_dir,0);
-								#self.Update_Strategy(c_control,shoot,move_dir,0);
+					#	if NoRight & (NoRight_tile[1] == 1):
+					#		if ((myT+10+6) < NoRight_tile[0][1]):
+					#			#print "Shoot Right Wall (D)"
+					#			move_dir = 2
+					#			shoot = 0
+					#		elif ((NoRight_tile[0][1]+NoRight_tile[0][3]) <= (myT+10+1)):
+					#			#print "Shoot Right Wall (U)"
+					#			move_dir = 0
+					#			shoot = 0
+					#		else:
+					#			move_dir = 1;
+					#			#if (myT in range(flagT-flagH, flagT+flagheight)) and (flagL > myL):
+					#			#if (myT > (flagT-(flagH/2))) and (flagL > myL):
+					#			#	shoot = 0;
+					#			#else:
+					#			shoot = 1;
+					#			#shootDist = NoRight_tile[0][0]-(myL+myW)
+					#			shootDist = 0
+					#			#print "Shoot R wall"
+					#			#self.Update_Strategy(c_control,0,move_dir,0);
+					#			#self.Update_Strategy(c_control,shoot,move_dir,0);
 						
 				elif (enemy_bulletT in range(myT-6-1, myL+10-6)) and (((enemy[0][0] < myL) and (enemy[1] == 1)) or ((myL < enemy[0][0]) and (enemy[1] == 3))):
 					if not NoDown:
 						#print "Erun D"
 						move_dir = 2
 						shoot = 0
+						self.Update_Strategy(c_control,0,move_dir,0)
+						continue
 					else:
 						#print "Eclose T"
 						move_dir = 0
@@ -400,6 +478,8 @@ class ai_agent():
 						#print "Erun T"
 						move_dir = 0
 						shoot = 0
+						self.Update_Strategy(c_control,0,move_dir,0)
+						continue
 					else:
 						#print "Eclose D"
 						move_dir = 2
@@ -416,6 +496,8 @@ class ai_agent():
 							#print "run R"
 							move_dir = 1
 							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
 						else:
 							#print "close L"
 							move_dir = 3
@@ -427,6 +509,8 @@ class ai_agent():
 							#print "run L"
 							move_dir = 3
 							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
 						else:
 							#print "close R"
 							move_dir = 1
@@ -446,6 +530,8 @@ class ai_agent():
 							#print "run R"
 							move_dir = 1
 							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
 						else:
 							#print "close L"
 							move_dir = 3
@@ -457,6 +543,8 @@ class ai_agent():
 							#print "run L"
 							move_dir = 3
 							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
 						else:
 							#print "close R"
 							move_dir = 1
@@ -471,25 +559,27 @@ class ai_agent():
 					#print "Bullet comes Left"
 					#if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+9-bullet[0][3])):
 					if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+10-bullet[0][3])):
-						#if not NoDown:
-						if not NoTop:
-							#print "run T"
-							move_dir = 0
-							shoot = 0
-						else:
-							#print "close D"
-							move_dir = 2
-							shoot = 0
-					#elif (bullet[0][1] in range(myT+9+6, myT+myH+1)):
-					elif (bullet[0][1] in range(myT+10+6, myT+myH+1)):
-						#if not NoTop:
 						if not NoDown:
 							#print "run D"
 							move_dir = 2
 							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
 						else:
 							#print "close T"
 							move_dir = 0
+							shoot = 0
+					#elif (bullet[0][1] in range(myT+9+6, myT+myH+1)):
+					elif (bullet[0][1] in range(myT+10+6, myT+myH+1)):
+						if not NoTop:
+							#print "run T"
+							move_dir = 0
+							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
+						else:
+							#print "close D"
+							move_dir = 2
 							shoot = 0
 					else:
 						move_dir = 1
@@ -504,25 +594,27 @@ class ai_agent():
 					#print "Bullet comes Right"
 					#if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+9-bullet[0][3])):
 					if (bullet[0][1] in range(myT-bullet[0][3]-1, myT+10-bullet[0][3])):
-						#if not NoDown:
-						if not NoTop:
-							#print "run T"
-							move_dir = 0
-							shoot = 0
-						else:
-							#print "close D"
-							move_dir = 2
-							shoot = 0
-					#elif (bullet[0][1] in range(myT+9+6, myT+myH+1)):
-					elif (bullet[0][1] in range(myT+10+6, myT+myH+1)):
-						#if not NoTop:
 						if not NoDown:
 							#print "run D"
 							move_dir = 2
 							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
 						else:
 							#print "close T"
 							move_dir = 0
+							shoot = 0
+					#elif (bullet[0][1] in range(myT+9+6, myT+myH+1)):
+					elif (bullet[0][1] in range(myT+10+6, myT+myH+1)):
+						if not NoTop:
+							#print "run T"
+							move_dir = 0
+							shoot = 0
+							self.Update_Strategy(c_control,0,move_dir,0)
+							continue
+						else:
+							#print "close D"
+							move_dir = 2
 							shoot = 0
 					else:
 						move_dir = 3
@@ -533,27 +625,203 @@ class ai_agent():
 						else:
 							shootDist = 0
 						#self.Update_Strategy(c_control,0,move_dir,0)
-			## Go around ##
+			## Get out of the deadlock ##
+			if (WantTo != 4):
+				if (WantTo == 0) and (not NoTop):
+					print "Now go Top"
+					move_dir = 0
+					if (preT == -1):
+						preT = myT
+					elif (myT < (preT-6)) or (myT <= 3):
+						preT = -1
+						if len(GetAwayStack) == 0:
+							WantTo = 4
+							GoRound = 4
+						else:
+							tmp = GetAwayStack.pop()
+							WantTo = tmp[0]
+							GoRound = tmp[1]
+				elif (WantTo == 1) and (not NoRight):
+					print "Now go Right" + str(preL) + ":" + str(myL)
+					move_dir = 1
+					if (preL == -1):
+						preL = myL
+					elif ((preL+6) < myL) or ((myL+myW) >= (26*16-3)):
+						preL = -1
+						if len(GetAwayStack) == 0:
+							WantTo = 4
+							GoRound = 4
+						else:
+							tmp = GetAwayStack.pop()
+							WantTo = tmp[0]
+							GoRound = tmp[1]
+				elif (WantTo == 2) and (not NoDown):
+					print "Now go Down"
+					move_dir = 2
+					if (preT == -1):
+						preT = myT
+					elif ((preT+6) < myT) or ((myT+myH) >= (26*16-3)):
+						preT = -1
+						if len(GetAwayStack) == 0:
+							WantTo = 4
+							GoRound = 4
+						else:
+							tmp = GetAwayStack.pop()
+							WantTo = tmp[0]
+							GoRound = tmp[1]
+				elif (WantTo == 3) and (not NoLeft):
+					print "Now go Left"
+					move_dir = 3
+					if (preL == -1):
+						preL = myL
+					elif (myL < (preL-6)) or (myL <= 3):
+						preL = -1
+						if len(GetAwayStack) == 0:
+							WantTo = 4
+							GoRound = 4
+						else:
+							tmp = GetAwayStack.pop()
+							WantTo = tmp[0]
+							GoRound = tmp[1]
+				#elif ((GoRound == 0) and NoTop and (not BoundTop) and ((NoTop_tile[1] != 1) and (NoTop_tile[1] != 4))) or ((GoRound == 2) and NoDown and (not BoundDown)) and ((NoDown_tile[1] != 1) and (NoDown_tile[1] != 4)):
+				elif ((GoRound == 0) and NoTop and ((NoTop_tile[1] != 1) and (NoTop_tile[1] != 4))) or ((GoRound == 2) and NoDown and ((NoDown_tile[1] != 1) and (NoDown_tile[1] != 4))):
+					print GetAwayStack
+					#GetAwayStack.append([WantTo,GoRound])
+					preL = -1
+					preT = -1
+					if (WantTo == 1):
+						print "Change Go Left"
+						if (not NoLeft) and (preD == 0):
+							GetAwayStack.append([WantTo,GoRound])
+							WantTo = GoRound
+							GoRound = 3
+							preD = 1
+						elif (GoRound == 0):
+							GoRound = 2
+							preD = 0
+							if NoTop and ((NoTop_tile[1] != 1) and (NoTop_tile[1] != 4)):
+								WantTo = 2
+							#elif NoDown and ((NoDown_tile[1] != 1) and (NoDown_tile[1] != 4)):
+							else:
+								WantTo = 0
+						else:
+							GoRound = 0
+							preD = 0
+							if NoTop and ((NoTop_tile[1] != 1) and (NoTop_tile[1] != 4)):
+								WantTo = 2
+							#elif NoDown and ((NoDown_tile[1] != 1) and (NoDown_tile[1] != 4)):
+							else:
+								WantTo = 0
+					elif (WantTo == 3):
+						print "Change Go Right"
+						if (not NoRight) and (preD == 0):
+							GetAwayStack.append([WantTo,GoRound])
+							WantTo = GoRound
+							GoRound = 1
+							preD = 1
+						elif (GoRound == 0):
+							GoRound = 2
+							preD = 0
+							if NoTop and ((NoTop_tile[1] != 1) and (NoTop_tile[1] != 4)):
+								WantTo = 2
+							#elif NoDown and ((NoDown_tile[1] != 1) and (NoDown_tile[1] != 4)):
+							else:
+								WantTo = 0
+						else:
+							GoRound = 0
+							preD = 0
+							if NoTop and ((NoTop_tile[1] != 1) and (NoTop_tile[1] != 4)):
+								WantTo = 2
+							#elif NoDown and ((NoDown_tile[1] != 1) and (NoDown_tile[1] != 4)):
+							else:
+								WantTo = 0
+				#elif ((GoRound == 1) and NoRight and (not BoundRight) and ((NoRight_tile[1] != 1) and (NoRight_tile[1] != 4))) or ((GoRound == 3) and NoLeft and (not BoundLeft) and ((NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4))):
+				elif ((GoRound == 1) and NoRight and ((NoRight_tile[1] != 1) and (NoRight_tile[1] != 4))) or ((GoRound == 3) and NoLeft and ((NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4))):
+					print GetAwayStack
+					preL = -1
+					preT = -1
+					if (WantTo == 0):
+						print "Change Go Down"
+						if (not NoDown) and (preD == 1):
+							GetAwayStack.append([WantTo,GoRound])
+							WantTo = GoRound
+							GoRound = 2
+							preD = 0
+						elif (GoRound == 1):
+							GoRound = 3
+							preD = 1
+							if NoRight and ((NoRight_tile[1] != 1) and (NoRight_tile[1] != 4)):
+								WantTo = 3
+							#elif NoLeft and ((NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4)):
+							else:
+								WantTo = 1
+						else:
+							GoRound = 1
+							preD = 1
+							if NoRight and ((NoRight_tile[1] != 1) and (NoRight_tile[1] != 4)):
+								WantTo = 3
+							#elif NoLeft and ((NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4)):
+							else:
+								WantTo = 1
+					elif (WantTo == 2):
+						print "Change Go Top"
+						if (not NoTop) and (preD == 1):
+							GetAwayStack.append([WantTo,GoRound])
+							WantTo = GoRound
+							GoRound = 0
+							preD = 0
+						elif (GoRound == 1):
+							GoRound = 3
+							preD = 1
+							if NoRight and ((NoRight_tile[1] != 1) and (NoRight_tile[1] != 4)):
+								WantTo = 3
+							#elif NoLeft and ((NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4)):
+							else:
+								WantTo = 1
+						else:
+							GoRound = 1
+							preD = 1
+							if NoRight and ((NoRight_tile[1] != 1) and (NoRight_tile[1] != 4)):
+								WantTo = 3
+							#elif NoLeft and ((NoLeft_tile[1] != 1) and (NoLeft_tile[1] != 4)):
+							else:
+								WantTo = 1
+				elif ((GoRound == 0) and BoundTop) or ((GoRound == 1) and BoundRight) or ((GoRound == 2) and BoundDown) or ((GoRound == 3) and BoundLeft):
+					print "Boundary"
+					preL = -1
+					preT = -1
+					if len(GetAwayStack) != 0:
+						tmp = GetAwayStack.pop()
+						WantTo = tmp[0]
+						GoRound = tmp[1]
+					else:
+						WantTo = 4
+						GoRound = 4
+				#elif (GoRound == 0) and NoTop and BoundTop:
+				else:
+					move_dir = GoRound
 			## Check block or not ##
-			if (move_dir == 0) and NoTop and (shoot == 0):
+			#if (move_dir == 0) and NoTop and (shoot == 0):
+			if (move_dir == 0) and NoTop:
 				#print ("No way top", NoTop_tile)
 				if ((myL+10+6)< NoTop_tile[0][0]) and (NoTop_tile[1] == 1):
-					#print "Shoot Top Wall (R)"
+					print "Shoot Top Wall (R)"
 					move_dir = 1
 					shoot = 0
 				elif ((NoTop_tile[0][0]+NoTop_tile[0][2]) <= (myL+10+1)) and (NoTop_tile[1] == 1):
-					#print "Shoot Top Wall (L)"
+					print "Shoot Top Wall (L)"
 					move_dir = 3
 					shoot = 0
 				elif (NoTop_tile[1] == 1):
 					move_dir = 0;
 					shoot = 1;
 					shootDist = myT-(NoTop_tile[0][1]+NoTop_tile[0][3])
-					#print "Shoot T wall"
+					print "Shoot T wall"
 					#self.Update_Strategy(c_control,0,move_dir,0);
 				#else:
 					#print "Unknown block!?"
-			elif (move_dir == 1) and NoRight and (shoot == 0):
+			#elif (move_dir == 1) and NoRight and (shoot == 0):
+			elif (move_dir == 1) and NoRight:
 				#print ("No way right", NoRight_tile)
 				if ((myT+10+6) < NoRight_tile[0][1]) and (NoRight_tile[1] == 1):
 					#print "Shoot Right Wall (D)"
@@ -573,7 +841,8 @@ class ai_agent():
 					#print "Shoot R wall"
 				#else:
 					#print "Unknown block!?"
-			elif (move_dir == 2) and NoDown and (shoot == 0):
+			#elif (move_dir == 2) and NoDown and (shoot == 0):
+			elif (move_dir == 2) and NoDown:
 				#print ("No way down", NoDown_tile)
 				if ((myL+10+6)< NoDown_tile[0][0]) and (NoDown_tile[1] == 1):
 					#print "Shoot Down Wall (R)"
@@ -593,7 +862,8 @@ class ai_agent():
 					#print "Shoot D wall"
 				#else:
 					#print "Unknown block!?"
-			elif (move_dir == 3) & NoLeft & (shoot == 0):
+			#elif (move_dir == 3) and NoLeft and (shoot == 0):
+			elif (move_dir == 3) and NoLeft:
 				#print ("No way left", NoLeft_tile)
 				if ((myT+10+6) < NoLeft_tile[0][1]) and (NoLeft_tile[1] == 1):
 					#print "Shoot Left Wall (D)"
